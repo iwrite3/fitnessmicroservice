@@ -13,15 +13,27 @@ public class UserService {
     private UserRepository repository;
     public UserResponse register( RegisterRequest request) {
         if(repository.existsByEmail(request.getEmail())){
-            throw new RuntimeException("Email already exist");
+            User existingUser =   repository.findByEmail(request.getEmail());
+            UserResponse userResponse = new UserResponse();
+            userResponse.setId(existingUser.getId());
+            userResponse.setId(existingUser.getKeycloakId());
+            userResponse.setEmail(existingUser.getEmail());
+            userResponse.setPassword(existingUser.getPassword());
+            userResponse.setLastName(existingUser.getLastName());
+            userResponse.setFirstName(existingUser.getFirstName());
+            userResponse.setCreatedAt(existingUser.getCreatedAt());
+            userResponse.setUpdatedId(existingUser.getUpdatedId());
+    return userResponse;
         }
    User user = new User();
     user.setEmail(request.getEmail());
     user.setPassword(request.getPassword());
     user.setFirstName(request.getFirstName());
     user.setLastName(request.getLastName());
+
     User savedUser =   repository.save(user);
     UserResponse userResponse = new UserResponse();
+        userResponse.setId(savedUser.getKeycloakId());
     userResponse.setId(savedUser.getId());
         userResponse.setEmail(savedUser.getEmail());
         userResponse.setPassword(savedUser.getPassword());
@@ -47,7 +59,7 @@ return userResponse;
    }
 
     public Boolean existByUserId(String userId) {
-        return repository.existsById(userId);
+        return repository.existsByKeycloakId(userId);
     }
 }
 

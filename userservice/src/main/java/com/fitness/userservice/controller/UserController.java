@@ -29,4 +29,9 @@ public class UserController {
     public String sayHello() {
         return "Hello, welcome to the Fitness Microservice!";
     }
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserResponse> getUserProfile(@PathVariable String userId){
+
+        return ResponseEntity.ok(userService.getUserProfile(userId));
+}
 }

@@ -1,5 +1,13 @@
 
+server:
 spring:
   application:
     name: api-gateway
-
+  config:
+    import: optional:configserver:http://localhost:8888
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Replace this URL with the actual URL of your Authorization Server
+          issuer-uri: http://localhost:8181/realms/fitness-oauth2
