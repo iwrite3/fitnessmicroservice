@@ -4,7 +4,8 @@ server:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      # Inject cloud Eureka URL, fallback to local
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
 
 spring:
   security:
@@ -17,12 +18,12 @@ spring:
     gateway:
       routes:
         - id: user-service
-          uri: lb://user-service    # Changed from lb:// to direct HTTP IP
+          uri: lb://user-service    
           predicates:
             - Path=/api/users/**
 
         - id: activity-service
-          uri: lb://activity-service         # Assuming you still want Eureka for these
+          uri: lb://activity-service         
           predicates:
             - Path=/api/activities/**
 
