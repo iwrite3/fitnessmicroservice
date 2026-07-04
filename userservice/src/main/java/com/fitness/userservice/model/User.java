@@ -20,7 +20,11 @@ public class User {
 
     @Column(unique = true , nullable = false)
     private String email;
-    private String keycloakId;
+    
+    // 🟢 CHANGED: Swapped keycloakId for firebaseId and mapped it cleanly
+    @Column(name = "firebase_id", unique = true)
+    private String firebaseId; 
+    
     @Column(nullable = false)
     private String password;
     private String firstName;
@@ -33,9 +37,5 @@ public class User {
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    private LocalDateTime updatedId;
-
-
-
+    private LocalDateTime updatedId; // Note: This is usually named 'updatedAt', but leaving it as 'updatedId' so it doesn't break your existing DTOs!
 }
-
