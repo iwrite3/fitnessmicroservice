@@ -4,8 +4,9 @@ spring:
       
       uri: ${MONGODB_URI:mongodb://localhost:27017/fitnessactivity}
   rabbitmq:
-    host: ${RABBITMQ_HOST:localhost}
-    port: ${RABBITMQ_PORT:5672}
+    # Use the full URL provided by CloudAMQP
+    addresses: ${RABBITMQ_URL}
+  ##  port: ${RABBITMQ_PORT:5672}
 
 
 server:
