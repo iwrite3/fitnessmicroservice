@@ -2,17 +2,17 @@ server:
   port: 8081
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/fitness_user_db
-    username: postgres
-    password: wdvhu6
+    # Inject cloud Postgres credentials, fallback to local
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/fitness_user_db}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:wdvhu6}
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update # CRITICAL: Prevents data wipe on cloud restarts
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+    
 eureka:
-    client:
-      serviceUrl:
-        defaultZone: http://localhost:8761/eureka/
-#    instance:
-#      prefer-ip-address: true
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
 
