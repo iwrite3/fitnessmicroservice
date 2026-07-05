@@ -9,13 +9,14 @@ const authSlice = createSlice({
   },
   reducers: {
     setCredentials:(state , action) => {
-      // const { user, token, userId } = action.payload
       state.user = action.payload.user
       state.token = action.payload.token
-      state.userId = action.payload.user.sub;
+      // Change .sub to .uid for Firebase
+      state.userId = action.payload.user.uid; 
+      
       localStorage.setItem('user', JSON.stringify(action.payload.user));
       localStorage.setItem('token', action.payload.token);
-      localStorage.setItem('userId', action.payload.user.sub);
+      localStorage.setItem('userId', action.payload.user.uid); 
     },
     logout: (state) => {
       state.user = null;
