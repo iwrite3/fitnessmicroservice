@@ -3,7 +3,9 @@ import { auth } from '../firebaseConfig'; // Ensure this path points to your new
 
 // Update this URL to your Render API Gateway once deployed.
 // For local testing, you can leave it as 'http://localhost:8080/api'
-const API_URL = 'https://YOUR_RENDER_GATEWAY_URL.onrender.com/api';
+// This tells Vite: "Use the Vercel variable. If it's missing, use localhost for my laptop."
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+
 
 const api = axios.create({
   baseURL: API_URL,
