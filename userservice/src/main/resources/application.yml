@@ -2,16 +2,4 @@ spring:
   application:
     name: user-service
   config:
-    # Inject cloud Config Server URL, fallback to local for laptop testing
     import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
- 
-  datasource:
-    # Use the full Neon connection string, NOT localhost
-    url: ${SPRING_DATASOURCE_URL} 
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
