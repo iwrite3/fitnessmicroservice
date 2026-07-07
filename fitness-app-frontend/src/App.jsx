@@ -8,13 +8,13 @@ import ActivityForm from './components/ActivityForm';
 import ActivityList from './components/ActivityList';
 import ActivityDetail from './components/ActivityDetail';
 
-// 1. CLEANED IMPORTS: We only need signInWithRedirect now
+// Firebase imports
 import { auth } from './firebaseConfig';
 import { signInWithRedirect, GoogleAuthProvider, onAuthStateChanged } from 'firebase/auth';
 
 const ActivitiesPage = () => {
  return ( 
-  <Box component="section" sx={{  p: 2 , border: '1px dashed #ccc', borderRadius: '4px', boxShadow: 3, backgroundColor: '#f9f9f9' }}> 
+  <Box component="section" sx={{ p: 2, border: '1px dashed #ccc', borderRadius: '4px', boxShadow: 3, backgroundColor: '#f9f9f9' }}> 
    <ActivityForm onActivityAdded={() => window.location.reload()} />
    <ActivityList /> 
   </Box>
@@ -24,6 +24,8 @@ const ActivitiesPage = () => {
 function App() {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
+  // This state is crucial: it prevents the app from rendering Login/Routes
+  // until Firebase has finished checking if a user is logged in.
   const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
@@ -31,19 +33,17 @@ function App() {
       if (user) {
         const freshToken = await user.getIdToken();
         
-        // 2. REDUX FIX: Extract only the safe data so JSON.stringify doesn't crash
         const safeUserData = {
           uid: user.uid,
           email: user.email,
           displayName: user.displayName
         };
 
-        // Pass the safeUserData to Redux instead of the raw user object
         dispatch(setCredentials({ token: freshToken, user: safeUserData }));
       } else {
         dispatch(logout());
       }
-      setAuthReady(true);
+      setAuthReady(true); // Now we know the auth state
     });
 
     return () => unsubscribe();
@@ -52,20 +52,21 @@ function App() {
   const handleLogin = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      // 3. INCOGNITO FIX: Trigger the redirect instead of the popup
       await signInWithRedirect(auth, provider);
     } catch (error) {
       console.error("Firebase Login failed:", error);
     }
   };
 
+  // If we haven't finished checking Firebase, show a loading screen
   if (!authReady) {
-    return <div>Loading Auth...</div>;
+    return <div>Loading...</div>;
   }
 
   return (
     <Router>
       { !token ? (
+        // Only render the Login button if we are sure there is no token
         <Button 
           variant="contained" 
           color="primary"
@@ -74,11 +75,12 @@ function App() {
           Login 
         </Button> 
       ) : (
-        <Box component="main" sx={{  p: 2 , border: '1px solid #ccc', borderRadius: '4px', boxShadow: 3, backgroundColor: '#f9f9f9' }}>
+        <Box component="main" sx={{ p: 2, border: '1px solid #ccc', borderRadius: '4px', boxShadow: 3, backgroundColor: '#f9f9f9' }}>
           <Routes>
             <Route path="/activities" element={<ActivitiesPage />} />
             <Route path="/activities/:id" element={<ActivityDetail />} />
-            <Route path="/" element={token ? <Navigate to="/activities" replace  /> : <div> Welcome! Please Login </div>} />
+            {/* If logged in and at root, redirect to activities */}
+            <Route path="/" element={<Navigate to="/activities" replace />} />
           </Routes> 
         </Box>   
       )}
