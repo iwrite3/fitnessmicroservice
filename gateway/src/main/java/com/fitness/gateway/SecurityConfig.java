@@ -28,16 +28,21 @@ public class SecurityConfig {
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .build();
-    }
-    @Bean
+    }@Bean
 public CorsConfigurationSource corsConfigurationSource(){
     CorsConfiguration  config = new CorsConfiguration();
-config.setAllowedOrigins(List.of("http://localhost:5173"));
-config.setAllowedMethods(Arrays.asList("GET" , "POST" , "PUT" , "DELETE" , "OPTIONS"));
-config.setAllowedHeaders(Arrays.asList("Authorization", "X-User-ID", "Content-Type"));
-config.setAllowCredentials(true);
-UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-source.registerCorsConfiguration("/api/**", config);
-return source;
-}
+    
+    // ADD YOUR DEPLOYED FRONTEND URL HERE
+    config.setAllowedOrigins(Arrays.asList(
+        "http://localhost:5173", // Keep this for local development
+        "https://fitness-frontend-one-eta.vercel.app" // REPLACE THIS with your actual deployed frontend URL!
+    ));
+    
+    config.setAllowedMethods(Arrays.asList("GET" , "POST" , "PUT" , "DELETE" , "OPTIONS"));
+    config.setAllowedHeaders(Arrays.asList("Authorization", "X-User-ID", "Content-Type"));
+    config.setAllowCredentials(true);
+    
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/api/**", config);
+    return source;
 }
