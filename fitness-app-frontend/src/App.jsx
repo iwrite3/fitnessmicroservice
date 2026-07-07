@@ -7,6 +7,7 @@ import { Box } from '@mui/material';
 import ActivityForm from './components/ActivityForm';
 import ActivityList from './components/ActivityList';
 import ActivityDetail from './components/ActivityDetail';
+import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from 'firebase/auth';
 
 // Firebase imports
 import { auth } from './firebaseConfig';
@@ -27,7 +28,14 @@ function App() {
   // This state is crucial: it prevents the app from rendering Login/Routes
   // until Firebase has finished checking if a user is logged in.
   const [authReady, setAuthReady] = useState(false);
-
+const handleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      // 2. Change this line to use signInWithPopup
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error("Firebase Login failed:", error);
+    }
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
