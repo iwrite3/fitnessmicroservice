@@ -28,7 +28,8 @@ public class SecurityConfig {
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .build();
-    }@Bean
+    }
+    @Bean
 public CorsConfigurationSource corsConfigurationSource(){
     CorsConfiguration  config = new CorsConfiguration();
     
@@ -45,4 +46,5 @@ public CorsConfigurationSource corsConfigurationSource(){
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/api/**", config);
     return source;
+}
 }
