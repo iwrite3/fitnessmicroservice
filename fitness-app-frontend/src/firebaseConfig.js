@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 
 // Your exact Firebase configuration
@@ -16,8 +16,15 @@ const firebaseConfig = {
 // Initialize Firebase App
 const app = initializeApp(firebaseConfig);
 
-// Initialize Analytics (Optional but good to have)
+// Initialize Analytics
 export const analytics = getAnalytics(app);
 
-// Initialize and export Auth (Crucial for your microservices)
+// Initialize and export Auth
 export const auth = getAuth(app);
+
+// CRITICAL FIX: Set persistence to Local so the user stays logged in 
+// even after a page refresh or redirect.
+setPersistence(auth, browserLocalPersistence)
+  .catch((error) => {
+    console.error("Firebase persistence error:", error);
+  });
