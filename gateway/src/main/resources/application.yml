@@ -1,10 +1,7 @@
-
 server:
   port: 8080
-  
+
 spring:
-  application:
-    name: api-gateway
   cloud:
     gateway:
       routes:
@@ -16,10 +13,6 @@ spring:
           uri: lb://USER-SERVICE
           predicates:
             - Path=/api/users/**
-        - id: ai-service
-          uri: lb://AI-SERVICE
-          predicates:
-            - Path=/api/recommendations/**
 
 eureka:
   client:
