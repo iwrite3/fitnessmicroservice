@@ -22,8 +22,8 @@ public class ActivityController {
     private ActivityService activityService;
 
 
-    @PostMapping
-    public ResponseEntity<ActivityResponse> trackActivity(@RequestBody ActivityRequest request , @RequestHeader("X-User_ID") String userId) {
+   @PostMapping
+public ResponseEntity<ActivityResponse> trackActivity(@RequestBody ActivityRequest request , @RequestHeader("X-User-ID") String userId) {
         // Logic to save the activity using the userId already inside the JSON request
 if(userId != null)
 {
