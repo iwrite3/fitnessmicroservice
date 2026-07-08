@@ -2,7 +2,12 @@ server:
   port: 8080
 
 spring:
+  application:
+    name: api-gateway
+  # Setting this to false disables the strict check for config server
   cloud:
+    config:
+      enabled: false 
     gateway:
       routes:
         - id: activity-service
@@ -13,6 +18,10 @@ spring:
           uri: lb://USER-SERVICE
           predicates:
             - Path=/api/users/**
+        - id: ai-service
+          uri: lb://AI-SERVICE
+          predicates:
+            - Path=/api/recommendations/**
 
 eureka:
   client:
