@@ -26,17 +26,17 @@ public class SecurityConfig {
         return NimbusReactiveJwtDecoder.withJwkSetUri(jwkSetUri).build();
     }
 
-    @Bean
+  @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Ensure CORS is linked
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeExchange(exchange -> exchange
-                        .pathMatchers("/api/users/**").permitAll() // Allow public access to user endpoints
+                        .pathMatchers("/api/users/**").permitAll()
                         .anyExchange().authenticated()
                 )
-                // 2. Link the decoder here
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())))
+                // Simply calling .jwt() here will auto-discover the jwtDecoder() bean defined below
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .build();
     }
 
