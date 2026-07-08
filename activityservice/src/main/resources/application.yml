@@ -3,4 +3,4 @@ spring:
     name: activity-service
   config:
     # Inject the cloud Config Server URL, fallback to local for laptop testing
-    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+    import: configserver:${CONFIG_SERVER_URL:http://localhost:8888}
