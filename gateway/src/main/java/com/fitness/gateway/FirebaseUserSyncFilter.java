@@ -12,6 +12,7 @@ import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 import com.fitness.gateway.user.RegisterRequest;
 import com.fitness.gateway.user.UserService;
+import com.fitness.gateway.user.UserResponse;
 
 @Component
 @Slf4j
