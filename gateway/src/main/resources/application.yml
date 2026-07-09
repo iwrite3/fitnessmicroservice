@@ -7,7 +7,7 @@ spring:
   # Setting this to false disables the strict check for config server
   cloud:
     config:
-      enabled: false 
+      enabled: true
     gateway:
       routes:
         - id: activity-service
