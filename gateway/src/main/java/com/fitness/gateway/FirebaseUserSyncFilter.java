@@ -21,38 +21,47 @@ public class FirebaseUserSyncFilter implements WebFilter {
     private final UserService userService;
 
     @Override
-public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-    String token = exchange.getRequest().getHeaders().getFirst("Authorization");
-    RegisterRequest registerRequest = getUserDetails(token);
+    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        String token = exchange.getRequest().getHeaders().getFirst("Authorization");
+        RegisterRequest registerRequest = getUserDetails(token);
 
-    // If we can't get a user ID, just proceed (or return unauthorized if you prefer)
-    if (registerRequest == null || registerRequest.getFirebaseId() == null) {
-        return chain.filter(exchange);
+        if (registerRequest == null || registerRequest.getFirebaseId() == null) {
+            return chain.filter(exchange);
+        }
+
+        String userId = registerRequest.getFirebaseId();
+
+        return userService.validateUser(userId)
+                .doOnError(e -> log.error("validateUser failed for {}: {}", userId, e.toString(), e))
+                .doOnSuccess(exists -> log.info("validateUser returned {} for {}", exists, userId))
+                .flatMap(exists -> {
+                    if (!exists) {
+                        return userService.registerUser(registerRequest)
+                                .doOnError(e -> log.error("registerUser failed for {}: {}", userId, e.toString(), e))
+                                .doOnSuccess(r -> log.info("registerUser succeeded for {}", userId));
+                    }
+                    return Mono.just(new UserResponse());
+                })
+                // SAFETY NET: never let a user-service hiccup kill the whole request.
+                // Log it, but still let the request through to its real destination
+                // (activity-service, etc.) with the header we already have.
+                .onErrorResume(e -> {
+                    log.error("User sync failed for {}, proceeding without blocking request: {}",
+                            userId, e.toString(), e);
+                    return Mono.empty();
+                })
+                .then(Mono.defer(() -> {
+                    ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
+                            .header("X-User-ID", userId)
+                            .build();
+                    return chain.filter(exchange.mutate().request(mutatedRequest).build());
+                }));
     }
-
-    String userId = registerRequest.getFirebaseId();
-
-    return userService.validateUser(userId)
-            .flatMap(exists -> {
-                if (!exists) {
-                    return userService.registerUser(registerRequest);
-                }
-                return Mono.just(new UserResponse()); // dummy response
-            })
-            .then(Mono.defer(() -> {
-                // FORCE the header injection
-                ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
-                        .header("X-User-ID", userId) 
-                        .build();
-                return chain.filter(exchange.mutate().request(mutatedRequest).build());
-            }));
-}
 
     private RegisterRequest getUserDetails(String token) {
         if (token == null || !token.startsWith("Bearer ")) {
             return null;
         }
-
         try {
             String tokenWithoutBearer = token.replace("Bearer ", "").trim();
             SignedJWT signedJWT = SignedJWT.parse(tokenWithoutBearer);
@@ -60,12 +69,9 @@ public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
 
             RegisterRequest registerRequest = new RegisterRequest();
             registerRequest.setEmail(claims.getStringClaim("email"));
-            
-            // Firebase uses "sub" for the unique user ID (UID)
             registerRequest.setFirebaseId(claims.getStringClaim("sub"));
             registerRequest.setPassword("dummy@123123");
 
-            // Firebase provides a single "name" claim instead of given/family names
             String fullName = claims.getStringClaim("name");
             if (fullName != null && fullName.contains(" ")) {
                 String[] nameParts = fullName.split(" ", 2);
