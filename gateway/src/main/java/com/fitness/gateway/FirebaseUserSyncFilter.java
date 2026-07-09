@@ -20,36 +20,32 @@ public class FirebaseUserSyncFilter implements WebFilter {
     private final UserService userService;
 
     @Override
-    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        String userId = exchange.getRequest().getHeaders().getFirst("X-User-Id");
-        String token = exchange.getRequest().getHeaders().getFirst("Authorization");
-        RegisterRequest registerRequest = getUserDetails(token);
+public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+    String token = exchange.getRequest().getHeaders().getFirst("Authorization");
+    RegisterRequest registerRequest = getUserDetails(token);
 
-        if (userId == null && registerRequest != null) {
-            userId = registerRequest.getFirebaseId();
-        }
-
-        if (userId != null && token != null) {
-            String finalUserId = userId;
-            return userService.validateUser(userId)
-                    .flatMap(exist -> {
-                        if (!exist && registerRequest != null) {
-                            return userService.registerUser(registerRequest).then(Mono.empty());
-                        } else {
-                            log.info("User already exists, Skipping sync");
-                            return Mono.empty();
-                        }
-                    })
-                    .then(Mono.defer(() -> {
-                        ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
-                                .header("X-User-ID", finalUserId)
-                                .build();
-                        return chain.filter(exchange.mutate().request(mutatedRequest).build());
-                    }));
-        }
-
+    // If we can't get a user ID, just proceed (or return unauthorized if you prefer)
+    if (registerRequest == null || registerRequest.getFirebaseId() == null) {
         return chain.filter(exchange);
     }
+
+    String userId = registerRequest.getFirebaseId();
+
+    return userService.validateUser(userId)
+            .flatMap(exists -> {
+                if (!exists) {
+                    return userService.registerUser(registerRequest);
+                }
+                return Mono.just(new UserResponse()); // dummy response
+            })
+            .then(Mono.defer(() -> {
+                // FORCE the header injection
+                ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
+                        .header("X-User-ID", userId) 
+                        .build();
+                return chain.filter(exchange.mutate().request(mutatedRequest).build());
+            }));
+}
 
     private RegisterRequest getUserDetails(String token) {
         if (token == null || !token.startsWith("Bearer ")) {
