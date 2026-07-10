@@ -30,14 +30,14 @@ spring:
         - id: user-service
           uri: lb://user-service    
           predicates:
-            - Path=/api/users/**
+            - Path=/api/users, /api/users/**
 
         - id: activity-service
           uri: lb://activity-service         
           predicates:
-            - Path=/api/activities/**
+           - Path=/api/activities, /api/activities/**
 
         - id: ai-service
           uri: lb://ai-service
           predicates:
-            - Path=/api/recommendations/**
+            - Path=/api/recommendations, /api/recommendations/**
