@@ -4,7 +4,10 @@ server:
 spring:
   application:
     name: api-gateway
-  # Setting this to false disables the strict check for config server
+
+  config:
+    # This tells Spring exactly where to look for the Config Server
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
   cloud:
     config:
       enabled: true
